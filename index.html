@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Chess Cycler</title>
+    <link rel="stylesheet"
+      href="https://unpkg.com/@chrisoakman/chessboard2@0.5.0/dist/chessboard2.min.css"
+      integrity="sha384-47VeTDpmy4yT21gKPXQcLQYQZwlmz27gEH5NTrOmTk3G/SGvMyltclOW/Q8uE+sL"
+      crossorigin="anonymous">
+  </head>
+  <body>
+	<div id="myBoard" style="width: 400px"></div>
+
+<label>Status:</label>
+<div id="gameStatus"></div>
+<label>FEN:</label>
+<div id="gameFEN"></div>
+<label>PGN:</label>
+<div id="gamePGN"></div>
+
+	<script src="https://unpkg.com/@chrisoakman/chessboard2@0.5.0/dist/chessboard2.min.js"
+        integrity="sha384-/KwQCjA1GWovZNV3QDVtvSMDzO4reGgarF/RqHipr7hIUElH3r5zNl9WEPPOBRIF"
+        crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"
+        integrity="sha512-xRllwz2gdZciIB+AkEbeq+gVhX8VB8XsfqeFbUh+SzHlN96dEduwtTuVuc2u9EROlmW9+yhRlxjif66ORpsgVA=="
+        crossorigin="anonymous"></script>
+	
+	<script>
+	
+// PuzzleId,FEN,Moves,Rating,RatingDeviation,Popularity,NbPlays,Themes,GameUrl,OpeningTags
+/*
+00sHx,q3k1nr/1pp1nQpp/3p4/1P2p3/4P3/B1PP1b2/B5PP/5K2 b k - 0 17,e8d7 a2e6 d7d8 f7f8,1760,80,83,72,mate mateIn2 middlegame short,https://lichess.org/yyznGmXs/black#34,Italian_Game Italian_Game_Classical_Variation
+00sJ9,r3r1k1/p4ppp/2p2n2/1p6/3P1qb1/2NQR3/PPB2PP1/R1B3K1 w - - 5 18,e3g3 e8e1 g1h2 e1c1 a1c1 f4h6 h2g1 h6c1,2671,105,87,325,advantage attraction fork middlegame sacrifice veryLong,https://lichess.org/gyFeQsOE#35,French_Defense French_Defense_Exchange_Variation
+00sJb,Q1b2r1k/p2np2p/5bp1/q7/5P2/4B3/PPP3PP/2KR1B1R w - - 1 17,d1d7 a5e1 d7d1 e1e3 c1b1 e3b6,2235,76,97,64,advantage fork long,https://lichess.org/kiuvTFoE#33,Sicilian_Defense Sicilian_Defense_Dragon_Variation
+00sO1,1k1r4/pp3pp1/2p1p3/4b3/P3n1P1/8/KPP2PN1/3rBR1R b - - 2 31,b8c7 e1a5 b7b6 f1d1,998,85,94,293,advantage discoveredAttack master middlegame short,https://lichess.org/vsfFkG0s/black#62,
+
+
+one move:
+
+001gi,r6r/1pNk1ppp/2np4/b3p3/4P1b1/N1Q5/P4PPP/R3KB1R w KQ - 3 18,c7a8 a5c3
+001wb,r3k2r/pb1p1ppp/1b4q1/1Q2P3/8/2NP1Pn1/PP4PP/R1B2R1K w kq - 1 17,h2g3 g6h5
+002CP,r5k1/pp4pp/4p1q1/4p3/3n4/P5P1/1PP2Q1P/2KR1R2 w - - 4 24,f2e3 g6c2
+002E4,8/8/kpq5/p4pQp/P7/7P/3r2P1/4R2K b - - 10 48,c6a4 g5d2
+003IX,8/3pk3/R7/1R2Pp1p/2PPnKr1/8/8/8 w - - 4 43,f4f5 e4g3
+004JD,3r4/R7/2p5/p1P2p2/1p4k1/nP6/P2KNP2/8 w - - 3 41,d2e3 a3c2
+004iZ,r2r2k1/2q1bpp1/3p1n1p/1ppN4/1P1BP3/P5Q1/4RPPP/R5K1 b - - 1 20,f6d5 g3g7
+004zI,2q3k1/4br1p/6RQ/1p1n2p1/7P/1P4P1/1B2PP2/6K1 b - - 0 27,h7g6 h6h8
+006eO,8/8/2p2k2/1p1p4/3P4/1PP1pK2/8/8 b - - 3 64,f6f5 b3b4
+007c6,2kr3r/pp1n2pp/2QB1bp1/5q2/2B5/8/PPP2PPP/3R1RK1 b - - 0 17,b7c6 c4a6
+
+*/
+		
+		
+// NOTE: this example uses the chess.js library:
+// https://github.com/jhlywa/chess.js
+
+// TODO: implement tracking of correct moves by player and cpu response
+
+
+const fromdb = '00sHx,q3k1nr/1pp1nQpp/3p4/1P2p3/4P3/B1PP1b2/B5PP/5K2 b k - 0 17,e8d7 a2e6 d7d8 f7f8,1760,80,83,72,mate mateIn2 middlegame short'
+const puzzle = fromdb.split(',')
+const solution = puzzle[2].replace(/\s+/g, '').match(/.{1,2}/g) || []
+console.log(solution)
+const game = new Chess(puzzle[1])
+
+const boardConfig = {
+  draggable: true,
+  position: game.fen(),
+  onDragStart,
+  onDrop
+  // onSnapEnd
+}
+const board = Chessboard2('myBoard', boardConfig)
+
+const statusEl = byId('gameStatus')
+const fenEl = byId('gameFEN')
+const pgnEl = byId('gamePGN')
+  
+var nextmove = 0
+
+makeCpuMove()
+  
+
+  
+//updateStatus()
+
+function makeCpuMove() {
+
+game.move({
+    from: solution[nextmove],
+    to: solution[nextmove+1],
+    promotion: 'q' // NOTE: always promote to a queen for example simplicity
+  })
+  
+  	nextmove = nextmove + 2
+	
+	 board.fen(game.fen(), () => {
+      updateStatus()
+    })
+  
+}
+
+function onDragStart (dragStartEvt) {
+  // do not pick up pieces if the game is over
+  if (game.game_over()) return false
+
+  // only pick up pieces for the side to move
+  if (game.turn() === 'w' && !isWhitePiece(dragStartEvt.piece)) return false
+  if (game.turn() === 'b' && !isBlackPiece(dragStartEvt.piece)) return false
+
+  // what moves are available to from this square?
+  const legalMoves = game.moves({
+    square: dragStartEvt.square,
+    verbose: true
+  })
+
+  // place Circles on the possible target squares
+  legalMoves.forEach((move) => {
+    board.addCircle(move.to)
+  })
+}
+
+function isWhitePiece (piece) { return /^w/.test(piece) }
+function isBlackPiece (piece) { return /^b/.test(piece) }
+
+function onDrop (dropEvt) {
+    // make sure move is next sequence of puzzle
+	
+	if (dropEvt.source != solution[nextmove] || dropEvt.target != solution[nextmove+1] ) {
+		board.clearCircles()
+		return 'snapback'
+	}
+	// see if the move is legal
+  const move = game.move({
+    from: dropEvt.source,
+    to: dropEvt.target,
+    promotion: 'q' // NOTE: always promote to a queen for example simplicity
+  })
+  
+  // log the moves
+  console.log(dropEvt.source)
+  console.log(dropEvt.target)
+  
+
+  // remove all Circles from the board
+  board.clearCircles()
+
+  // make the move if it is legal
+
+  if (move) {
+    // update the board position with the new game position, then update status DOM elements
+    board.fen(game.fen(), () => {
+      updateStatus()
+    })
+	// cpu response
+	nextmove = nextmove + 2
+	
+	if (nextmove != solution.length) {
+		makeCpuMove()
+	}
+	
+	
+  } else {
+    return 'snapback'
+  }
+}
+
+// update the board position after the piece snap
+// for castling, en passant, pawn promotion
+// function onSnapEnd () {
+//   board.position(game.fen())
+// }
+
+// update DOM elements with the current game status
+function updateStatus () {
+  let statusHTML = ''
+  const whosTurn = game.turn() === 'w' ? 'White' : 'Black'
+
+  if (!game.game_over()) {
+    if (game.in_check()) statusHTML = whosTurn + ' is in check! '
+    statusHTML = statusHTML + whosTurn + ' to move.'
+  } else if (game.in_checkmate() && game.turn() === 'w') {
+    statusHTML = 'Game over: white is in checkmate. Black wins!'
+  } else if (game.in_checkmate() && game.turn() === 'b') {
+    statusHTML = 'Game over: black is in checkmate. White wins!'
+  } else if (game.in_stalemate() && game.turn() === 'w') {
+    statusHTML = 'Game is drawn. White is stalemated.'
+  } else if (game.in_stalemate() && game.turn() === 'b') {
+    statusHTML = 'Game is drawn. Black is stalemated.'
+  } else if (game.in_threefold_repetition()) {
+    statusHTML = 'Game is drawn by threefold repetition rule.'
+  } else if (game.insufficient_material()) {
+    statusHTML = 'Game is drawn by insufficient material.'
+  } else if (game.in_draw()) {
+    statusHTML = 'Game is drawn by fifty-move rule.'
+  }
+  
+  if (nextmove < solution.length) {
+	  statusEl.innerHTML = statusHTML
+	  fenEl.innerHTML = game.fen()
+	  pgnEl.innerHTML = game.pgn()
+  } else {
+	statusEl.innerHTML = 'Puzzle Done'
+  }
+
+  
+}
+
+function byId (id) {
+  return document.getElementById(id)
+}
+		
+	</script>
+	
+  </body>
+</html>
